@@ -1,0 +1,7 @@
+basicConstraints = CA:FALSE
+# nsCertType = client  # deprecated
+nsComment = "<service> - OpenSSL Generated Client Certificate"
+subjectKeyIdentifier = hash
+# authorityKeyIdentifier = keyid,issuer  # causes problems
+keyUsage = critical, digitalSignature, keyAgreement
+extendedKeyUsage = clientAuth

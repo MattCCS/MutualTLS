@@ -9,7 +9,7 @@ For eventual use with a personal media server to keep out gremlins.
 
 
 HINT FROM https://stackoverflow.com/questions/45628601/client-authentication-using-self-signed-ssl-certificate-for-nginx
-```
+```bash
     # Create the CA Key and Certificate for signing Client Certs
     openssl genrsa -aes256 -out ca.key 4096                   # produces ca.key
     openssl req -new -x509 -days 365 -key ca.key -out ca.crt  # produces ca.crt
@@ -39,13 +39,13 @@ Outputs:
 
 1) Add to keychain (`login` is fine)
 2) Trust SSL always
-    By here, Chrome will use it
+    By now, Chrome will use it
 3) Add identity --> hostname or IP (e.g. 10.0.1.7)
-    By here, Safari will use it
-    By here, Opera will use it
+    By now, Safari will use it
+    By now, Opera will use it
 
 Utilities:
-```
+```bash
     # verify a .key file
     openssl rsa -in <filepath.key> && echo "yes" || echo "no"
     echo "<password>" | openssl rsa -in <filepath.key> -passin stdin 1>/dev/null 2>&1 && echo "yes" || echo "no"
