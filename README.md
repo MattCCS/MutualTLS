@@ -11,13 +11,15 @@ For eventual use with a personal media server to keep out gremlins.
 HINT FROM https://stackoverflow.com/questions/45628601/client-authentication-using-self-signed-ssl-certificate-for-nginx
 ```
     # Create the CA Key and Certificate for signing Client Certs
-    openssl genrsa -des3 -out ca.key 4096                     # produces ca.key
+    openssl genrsa -aes256 -out ca.key 4096                   # produces ca.key
     openssl req -new -x509 -days 365 -key ca.key -out ca.crt  # produces ca.crt
 
     # Create the Client Key and CSR
-    openssl genrsa -des3 -out client.key 4096         # produces client.key
+    openssl genrsa -aes256 -out client.key 4096       # produces client.key
     openssl req -new -key client.key \
         -extfile client_cert_ext.cnf -out client.csr  # produces client.csr (requires client.key password)
+        OR
+        -config client_cert_ext.cnf -out client.csr  # produces client.csr (requires client.key password)
 
     # Sign the client certificate with our CA cert
     openssl x509 -req -days 365 -in client.csr -CA ca.crt \
@@ -44,6 +46,10 @@ Outputs:
 
 Utilities:
 ```
+    # verify a .key file
+    openssl rsa -in <filepath.key> && echo "yes" || echo "no"
+    echo "<password>" | openssl rsa -in <filepath.key> -passin stdin 1>/dev/null 2>&1 && echo "yes" || echo "no"
+
     # check if .p12 (client info) was signed with .crt (server info)
     ...
 
