@@ -43,6 +43,10 @@ Outputs:
 3) Add identity --> hostname or IP (e.g. 10.0.1.7)
     By now, Safari will use it
     By now, Opera will use it
+4) To install onto an iPhone:
+    1) `python -m http.server` to host the .p12 file
+    2) On iOS, navigate to temporary server and click .p12 file
+    3) Follow steps to install, providing .p12 file Export Password when prompted
 
 Utilities:
 ```bash
@@ -57,7 +61,9 @@ Utilities:
     openssl req -text -noout -verify -in <filepath.csr>
 
     # view .crt file
-    openssl x509 -in <filepath.crt> -text -noout
+
+    # view .crt fingerprint hash
+    openssl x509 -fingerprint -in <filepath.crt> | head -n 1
 
     # view .p12 file
     # (requires client.key password)
