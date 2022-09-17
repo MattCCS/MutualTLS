@@ -94,7 +94,7 @@ def sign_csr(
     """
     Sign a Certificate Signing Request, producing a certificate.
     """
-    # openssl x509 -req -days 365 -in client.csr -CA ca.crt \
+    # openssl x509 -req -days 365 -sha256 -in client.csr -CA ca.crt \
     #     -CAkey ca.key -set_serial 01 -out client.crt
     if not any([client_name, client_csr]):
         raise ValueError("Must provide client_name or client_csr!")
@@ -132,6 +132,7 @@ def sign_csr(
     command = [
         "openssl", "x509", "-req",
         "-days", "365",
+        "-sha256",
         "-in", str(csrpath),
         "-CA", str(ca_certificate),
         "-CAkey", str(ca_keyfile),

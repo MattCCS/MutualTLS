@@ -22,7 +22,7 @@ HINT FROM https://stackoverflow.com/questions/45628601/client-authentication-usi
         -config client_cert_ext.cnf -out client.csr  # produces client.csr (requires client.key password)
 
     # Sign the client certificate with our CA cert
-    openssl x509 -req -days 365 -in client.csr -CA ca.crt \
+    openssl x509 -req -days 365 -sha256 -in client.csr -CA ca.crt \
         -CAkey ca.key -set_serial 01 -out client.crt  # produces client.crt
 
     # Convert to .p12 so import in OSX works
