@@ -8,8 +8,14 @@ from typing import Optional
 
 
 def generate_key(entity_name: str) -> pathlib.Path:
-    # openssl genrsa -aes256 -out ca.key 4096                     # produces ca.key
+    """
+    Generate a key.
+    """
+    # openssl genrsa -aes256 -out ca.key 4096
+    # (produces ca.key)
     outpath = pathlib.Path(f"{entity_name}.key").absolute()
+
+    print(f"[ ] Checking for path collisions...")
     if outpath.exists():
         raise FileExistsError("[-] That keyfile already exists!  Cancelling keyfile creation.")
 
@@ -25,7 +31,11 @@ def create_root_ca_certificate(
     root_ca_name: Optional[str]=None,
     root_ca_keyfile: Optional[str]=None,
 ) -> pathlib.Path:
-    # openssl req -new -x509 -days 365 -key ca.key -out ca.crt    # produces ca.crt
+    """
+    Create a self-signed (root) certificate.
+    """
+    # openssl req -new -x509 -days 365 -key ca.key -out ca.crt
+    # (produces ca.crt)
     if not any([root_ca_name, root_ca_keyfile]):
         raise ValueError("Must provide root_ca_name or root_ca_keyfile!")
 
@@ -60,7 +70,8 @@ def generate_csr(entity_name: Optional[str]=None, entity_keyfile: Optional[str]=
     """
     Generate a Certificate Signing Request.
     """
-    # openssl req -new -key client.key -config client_cert_ext.cnf -out client.csr
+    # openssl req -new -key client.key -subj "/CN=client CSR" -out client.csr
+    # (produces client.csr)
     if not any([entity_name, entity_keyfile]):
         raise ValueError("Must provide entity_name or entity_keyfile!")
 
@@ -71,11 +82,15 @@ def generate_csr(entity_name: Optional[str]=None, entity_keyfile: Optional[str]=
 
     outpath = keypath.with_suffix(".csr")
 
+    print(f"[ ] Checking for path collisions...")
+    if outpath.exists():
+        raise FileExistsError("[-] .csr file already exists!  Cancelling .csr creation.")
+
     print(f"[ ] Generating CSR...")
     command = [
         "openssl", "req", "-new",
         "-key", str(keypath),
-        "-config", "client_cert_ext_full.cnf",  # TODO: .
+        "-subj", f"/CN={keypath.stem} CSR",
         "-out", str(outpath),
     ]
     subprocess.check_call(command)
@@ -96,6 +111,7 @@ def sign_csr(
     """
     # openssl x509 -req -days 365 -sha256 -in client.csr -CA ca.crt \
     #     -CAkey ca.key -set_serial 01 -out client.crt
+    # (produces client.crt)
     if not any([client_name, client_csr]):
         raise ValueError("Must provide client_name or client_csr!")
 
@@ -131,12 +147,12 @@ def sign_csr(
     print(f"[ ] Generating certificate from CSR...")
     command = [
         "openssl", "x509", "-req",
-        "-days", "365",
+        "-days", "365",  # TODO: parameterize
         "-sha256",
         "-in", str(csrpath),
         "-CA", str(ca_certificate),
         "-CAkey", str(ca_keyfile),
-        "-set_serial", "01",  # TODO: .
+        "-set_serial", "01",  # TODO: parameterize
         "-out", str(outpath),
     ]
     subprocess.check_call(command)
@@ -155,7 +171,8 @@ def convert_crt_to_p12(
     """
     # openssl pkcs12 -export -clcerts -inkey client.key \
     #   -in client.crt -out client.p12 \
-    #   -name "<person>'s <service> Client Cert p12"
+    #   -name "client Cert p12"
+    # (produces client.p12)
     if not (client_name or all([client_certificate, client_keyfile])):
         raise ValueError("Must provide client_name or (client_certificate and client_keyfile)!")
 
@@ -178,7 +195,7 @@ def convert_crt_to_p12(
         "-inkey", str(client_keyfile),
         "-in", str(client_certificate),
         "-out", str(outpath),
-        "-name", "<person>'s <service> Client Cert p12",  # TODO: .
+        "-name", f"{client_certificate.stem} Cert p12",
     ]
     subprocess.check_call(command)
     print(f"[+] Created {outpath.name} at {str(outpath)}.")
@@ -187,6 +204,9 @@ def convert_crt_to_p12(
 
 
 def verify_keyfile_password(keyfile_filepath, keyfile_password) -> bool:
+    """
+    Verify that the given password decrypts the given keyfile.
+    """
     command = ["openssl", "rsa", "-in", str(keyfile_filepath), "-passin", "stdin"]
     proc = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     proc.communicate(input=keyfile_password.encode("utf-8"))

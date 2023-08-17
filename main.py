@@ -1,18 +1,14 @@
-#!/usr/bin/env python
-
 """
-CLI to run tools related to certs and mutual TLS.
+Interactive tools related to certificates and mutual TLS.
 """
 
 import argparse
 import getpass
 import pathlib
-# import secrets
 import sys
 from typing import Optional
 
 import actions
-import tabcompletion
 
 
 __author__ = "matthewcotton.cs@gmail.com"
@@ -113,10 +109,8 @@ def parse_args():
     parser_scc = subparsers.add_parser("convert-client-crt-to-p12")
 
     parser_vkp = subparsers.add_parser("verify-keyfile-password")
-    parser_vkp.add_argument("-k", "--keyfile_filepath", required=True)
+    parser_vkp.add_argument("keyfile_filepath")
 
-    tabcompletion.register(parser)
-    tabcompletion.register(parser_vkp)
     return parser.parse_args()
 
 
@@ -129,9 +123,10 @@ def main():
         create_root_ca_key(root_ca_name=root_ca_name)
         create_root_ca_certificate(root_ca_name=root_ca_name)
     elif action == "verify-keyfile-password":
-        valid = verify_keyfile_password(pathlib.Path(args.keyfile_filepath))
-        print("[+] Password was valid." if valid else "[-] Password was invalid.")
-        sys.exit(int(not valid))
+        if verify_keyfile_password(pathlib.Path(args.keyfile_filepath)):
+            print("[+] Password was correct.")
+        else:
+            sys.exit("[-] Password was incorrect.")
     elif action == "generate-client-key":
         generate_client_key()
     elif action == "generate-client-csr":
